@@ -7,6 +7,7 @@ Example how to use flask to create a service for one or more players
 """
 import logging
 
+from examples.arena.arena_play import MyAgent
 from jass.service.player_service_app import PlayerServiceApp
 from jass.agents.agent_random_schieber import AgentRandomSchieber
 
@@ -29,12 +30,14 @@ def create_app():
     # app.config.from_pyfile('my_player_service.cfg', silent=False)
 
     # add some players
-    app.add_player('random', AgentRandomSchieber())
+    app.add_player('MyAgent1', MyAgent())
+    app.add_player('MyAgent2', MyAgent())  
 
     return app
 
 
 if __name__ == '__main__':
    app = create_app()
-   app.run()
+   # Make server accessible from other machines in the network
+   app.run(host='0.0.0.0', port=5000, debug=True)
 
