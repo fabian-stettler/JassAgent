@@ -6,22 +6,18 @@ import numpy as np
 import copy
 
 class MinimaxOneTrick(PlayingStrategyGameObservation):
-    '''evaluates minimax for one trick using minimax algorithm with configurable depth'''
+    '''evaluates minimax for one trick using minimax algorithm'''
     
-    def __init__(self, max_depth=4):
+    def __init__(self):
         """
-        Args:
-            max_depth: Maximum simulation depth (number of cards to simulate ahead)
-                      4 = complete trick simulation
-                      2 = simulate 2 cards ahead  
-                      1 = simulate only next player's move
+        Minimax strategy that always simulates one complete trick (4 cards).
+        No depth parameter needed since it's always 4.
         """
         self._rule = RuleSchieber()
-        self.max_depth = max_depth
     
     def action_play_card(self, game_state: GameState):
         """
-        Choose the best card using minimax with configurable depth.
+        Choose the best card using minimax for one complete trick (4 cards).
         """
         valid_cards = self._rule.get_valid_cards_from_state(game_state)
         valid_card_indices = np.flatnonzero(valid_cards)
@@ -39,9 +35,8 @@ class MinimaxOneTrick(PlayingStrategyGameObservation):
             sim_state = copy.deepcopy(game_state)
             self._simulate_card_play(sim_state, card, game_state.player)
             
-            # Start minimax with the specified depth
-            # Depth-1 because we already played one card
-            score = self._minimax(sim_state, self.max_depth - 1, is_maximizing=False)
+            # Start minimax with depth 3 (since we already played one card, 3 more remain)
+            score = self._minimax(sim_state, 3, is_maximizing=False)
             
             if score > best_score:
                 best_score = score
@@ -191,7 +186,32 @@ class MinimaxOneTrick(PlayingStrategyGameObservation):
             if card >= 0:  # Valid card
                 trick_value += calculate_score_of_card(card, game_state.trump)
         
+        # Try to determine who is currently winning the partial trick
+        current_winner_bonus = 0
+        if game_state.nr_cards_in_trick > 0:
+            # wer hat den trick angefangen
+            trick_first_player = (game_state.player - game_state.nr_cards_in_trick) % 4
+            
+            # Find the highest card played so far
+            try:
+                partial_winner = self._rule.calc_winner(
+                    current_trick, trick_first_player, trump=game_state.trump
+                )
+                
+                # Check if winner is on our team
+                our_player = 0  # Assuming we are player 0
+                our_team = [our_player, (our_player + 2) % 4]  # Players 0&2 are partners
+                
+                if partial_winner in our_team:
+                    current_winner_bonus = trick_value * 0.3  # We're winning - good!
+                else:
+                    current_winner_bonus = -trick_value * 0.3  # Opponents winning - bad!
+                    
+            except (IndexError, ValueError):
+                # Fallback if trick evaluation fails
+                current_winner_bonus = 0
+        
         # If we're leading the trick, this is potentially good
         # More sophisticated heuristics could be added here
-        return trick_value * 0.1  # Small weight since it's just a heuristic
+        return trick_value * 0.1 + current_winner_bonus
 

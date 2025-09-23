@@ -4,7 +4,7 @@ from jass.game.const import *
 from jass.game.rule_schieber import RuleSchieber
 from jass.agents.agent import Agent
 from jass.agents.agent_random_schieber import AgentRandomSchieber
-from rule_based_agent_util import *
+from utils.rule_based_agent_util import *
 from game.game_util import *
 from strategies.highest_card_first import HighestCardFirst
 from jass.strategies.strategy_setter_game_observation import StrategySetterGameObservation

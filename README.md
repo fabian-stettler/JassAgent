@@ -14,4 +14,4 @@ cd /home/fabian/Documents/InformatikVault/Semester5/RL4GAMES/AgentCode/jass-kit-
 # publish local flask server with ngrok
 - precondition: ngrok is set up and running // --> https://dashboard.ngrok.com/get-started/setup/linux
 - ngrok http <exposed_port>  //e.g. 5000
-- players should no be accessible through endpoints 
+- players should now be accessible through endpoints 

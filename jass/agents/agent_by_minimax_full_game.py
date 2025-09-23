@@ -7,33 +7,38 @@ from jass.agents.agent_cheating import AgentCheating
 from jass.utils.rule_based_agent_util import *
 from jass.game.game_util import *
 from jass.game.game_state import GameState
-from jass.strategies.minimax_one_trick import MinimaxOneTrick
+from jass.strategies.minimax_full_game import MinimaxFullGame
 from jass.strategies.strategy_setter_game_state import StrategySetter as StrategySetterGameState
 
 
-class AgentByMinimax(AgentCheating):
-    def __init__(self):
+class AgentByMinimaxFullGame(AgentCheating):
+    """
+    Advanced Minimax agent that uses full-game planning with configurable depth
+    """
+    
+    def __init__(self, max_depth=6):
+        """
+        Args:
+            max_depth: Search depth for minimax algorithm (default: 6)
+        """
         super().__init__()
-        # we need a rule object to determine the valid cards
         self._rule = RuleSchieber()
+        self.max_depth = max_depth
+        
+        # Initialize full-game strategy
+        self.full_game_strategy = MinimaxFullGame(max_depth=max_depth)
         
     def action_trump(self, state: GameState) -> int:
         """
-        Determine trump action for the given observation
-        Args:
-            state: the game state, it must be in a state for trump selection
-
-        Returns:
-            selected trump as encoded in jass.game.const or jass.game.const.PUSH
+        Determine trump action using enhanced analysis for full-game strategy
         """
         cardsOfCurrentPlayer = state.hands[state.player]
-        # convert to int encoded list for easier processing
         cardsOfCurrentPlayer = convert_one_hot_encoded_cards_to_int_encoded_list(cardsOfCurrentPlayer)
 
         currentMaxTrumpKind = -1
         chosenTrump = -1
         
-        #check score for all possible kinds and take max
+        # Check score for all possible kinds and take max
         possible_kinds = [const.DIAMONDS, const.HEARTS, const.SPADES, const.CLUBS]
         for i in range(len(possible_kinds)):
             trump_score = calculate_trump_selection_score(cardsOfCurrentPlayer, possible_kinds[i])
@@ -41,10 +46,11 @@ class AgentByMinimax(AgentCheating):
                 currentMaxTrumpKind = trump_score
                 chosenTrump = possible_kinds[i]
         
-        # schiebe if score < 68 if possible, else take max score
-        #print("Max trump score: ", currentMaxTrumpKind)
+        # Conservative pushing threshold for long-term planning
+        push_threshold = 70
+        
         if state.forehand == -1:
-            if currentMaxTrumpKind < 68:
+            if currentMaxTrumpKind < push_threshold:
                 return const.PUSH
             else:
                 return chosenTrump
@@ -54,14 +60,8 @@ class AgentByMinimax(AgentCheating):
 
     def action_play_card(self, game_state: GameState) -> int:
         """
-        Determine the card to play with dept of one_trick
-
-        Args:
-            game_state: the game state
-
-        Returns:
-            the card to play, int encoded as defined in jass.game.const
+        Determine the card to play using full-game minimax strategy
         """
-
-        strategy = StrategySetterGameState(MinimaxOneTrick())
+        strategy = StrategySetterGameState(self.full_game_strategy)
         return strategy.action_play_card(game_state)
+
