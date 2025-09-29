@@ -1,0 +1,93 @@
+@startuml minimax_method_calls
+title Minimax Strategy Method Call Hierarchy
+
+class MinimaxFullGame {
+    +_select_best_card()
+    +_minimax_with_pruning()
+    +_minimax_basic()
+    +_create_simulation()
+    +_create_simulation_for_player()
+}
+
+class MinimaxOneTrick {
+    +_select_best_card()
+    +_minimax()
+    +_maximize_score()
+    +_minimize_score()
+    +_evaluate_state()
+    +_evaluate_partial_trick()
+    +_evaluate_current_winner()
+}
+
+class MinimaxBaseStrategy {
+    +action_play_card()
+    +_get_valid_cards()
+    +_get_valid_cards_for_player()
+    +_simulate_card_play()
+    +_is_maximizing_player()
+    +_evaluate_trick()
+}
+
+class GameStateEvaluator {
+    +evaluate_position()
+    +create_state_key()
+    +_is_game_over()
+    +_evaluate_final_position()
+    +_calculate_hand_strength()
+}
+
+class TrickManager {
+    +finalize_trick()
+    +is_trick_complete()
+    +simulate_move()
+}
+
+class AlphaBetaPruner {
+    +clear_cache()
+    +get_cached_score()
+    +cache_score()
+    +should_prune()
+    +maximize_with_pruning()
+    +minimize_with_pruning()
+}
+
+' Inheritance
+MinimaxBaseStrategy <|-- MinimaxFullGame
+MinimaxBaseStrategy <|-- MinimaxOneTrick
+
+' Composition
+MinimaxFullGame *-- GameStateEvaluator
+MinimaxFullGame *-- TrickManager  
+MinimaxFullGame *-- AlphaBetaPruner
+
+' Method Call Flow Annotations
+note right of MinimaxFullGame::_select_best_card
+1. clear_cache()
+2. simulate_move() for each card
+3. _minimax_with_pruning()
+4. Return best card
+end note
+
+note right of MinimaxFullGame::_minimax_with_pruning
+1. create_state_key()
+2. get_cached_score()
+3. evaluate_position() OR
+4. finalize_trick() OR  
+5. maximize/minimize_with_pruning()
+6. cache_score()
+end note
+
+note right of MinimaxOneTrick::_select_best_card
+1. copy.deepcopy() for each card
+2. _simulate_card_play()
+3. _minimax()
+4. Return best card
+end note
+
+note right of MinimaxOneTrick::_minimax
+1. _evaluate_state() OR
+2. _maximize_score() OR
+3. _minimize_score()
+end note
+
+@enduml

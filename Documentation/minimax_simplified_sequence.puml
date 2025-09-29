@@ -1,0 +1,136 @@
+@startuml minimax_simplified_sequence
+title Simplified Minimax Function Call Sequence
+
+participant "MinimaxFullGame" as MFG
+participant "GameStateEvaluator" as GSE
+participant "TrickManager" as TM
+participant "AlphaBetaPruner" as ABP
+
+== MinimaxFullGame Main Flow ==
+
+[-> MFG: _select_best_card()
+activate MFG
+
+MFG -> ABP: clear_cache()
+activate ABP
+ABP --> MFG: 
+deactivate ABP
+
+loop for each valid card
+    MFG -> TM: simulate_move()
+    activate TM
+    TM --> MFG: sim_state
+    deactivate TM
+    
+    MFG -> MFG: _minimax_with_pruning()
+    activate MFG
+    
+    MFG -> GSE: create_state_key()
+    activate GSE
+    GSE --> MFG: state_key
+    deactivate GSE
+    
+    MFG -> ABP: get_cached_score()
+    activate ABP
+    ABP --> MFG: cached_score
+    deactivate ABP
+    
+    alt if not cached
+        alt if terminal state
+            MFG -> GSE: evaluate_position()
+            activate GSE
+            GSE -> GSE: _is_game_over()
+            GSE -> GSE: _evaluate_final_position()
+            GSE --> MFG: score
+            deactivate GSE
+        else if trick complete
+            MFG -> TM: is_trick_complete()
+            activate TM
+            TM --> MFG: true
+            deactivate TM
+            
+            MFG -> TM: finalize_trick()
+            activate TM
+            TM --> MFG: next_state
+            deactivate TM
+            
+            MFG -> MFG: _minimax_with_pruning() [recursive]
+        else
+            alt if maximizing
+                MFG -> ABP: maximize_with_pruning()
+                activate ABP
+                ABP -> MFG: _minimax_with_pruning() [recursive]
+                ABP --> MFG: max_score
+                deactivate ABP
+            else
+                MFG -> ABP: minimize_with_pruning()
+                activate ABP
+                ABP -> MFG: _minimax_with_pruning() [recursive]
+                ABP --> MFG: min_score
+                deactivate ABP
+            end
+        end
+        
+        MFG -> ABP: cache_score()
+        activate ABP
+        ABP --> MFG: 
+        deactivate ABP
+    end
+    
+    deactivate MFG
+end
+
+[<-- MFG: best_card
+deactivate MFG
+
+== MinimaxOneTrick Main Flow ==
+
+participant "MinimaxOneTrick" as MOT
+
+[-> MOT: _select_best_card()
+activate MOT
+
+loop for each valid card
+    MOT -> MOT: _minimax()
+    activate MOT
+    
+    alt if terminal state
+        MOT -> MOT: _evaluate_state()
+        activate MOT
+        
+        alt if trick complete
+            MOT -> MOT: _evaluate_trick()
+        else
+            MOT -> MOT: _evaluate_partial_trick()
+            MOT -> MOT: _evaluate_current_winner()
+        end
+        
+        MOT --> MOT: score
+        deactivate MOT
+    else
+        alt if maximizing
+            MOT -> MOT: _maximize_score()
+            activate MOT
+            loop for each card
+                MOT -> MOT: _minimax() [recursive]
+            end
+            MOT --> MOT: max_score
+            deactivate MOT
+        else
+            MOT -> MOT: _minimize_score()
+            activate MOT
+            loop for each card
+                MOT -> MOT: _minimax() [recursive]
+            end
+            MOT --> MOT: min_score
+            deactivate MOT
+        end
+    end
+    
+    deactivate MOT
+end
+
+[<-- MOT: best_card
+deactivate MOT
+
+@enduml

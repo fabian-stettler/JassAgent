@@ -1,0 +1,141 @@
+@startuml minimax_sequence_diagram
+title Minimax Strategy Sequence Diagram - Full Game vs One Trick Comparison
+
+actor User as U
+participant "Agent" as A
+participant "StrategySetter" as SS
+participant "MinimaxFullGame" as MFG
+participant "MinimaxOneTrick" as MOT
+participant "MinimaxBaseStrategy" as MBS
+participant "GameStateEvaluator" as GSE
+participant "TrickManager" as TM
+participant "AlphaBetaPruner" as ABP
+participant "GameState" as GS
+
+== Card Selection Process ==
+
+U -> A: action_play_card(observation)
+A -> SS: action_play_card(game_state)
+SS -> MFG: action_play_card(game_state)
+note right: Full Game Strategy
+
+MFG -> MBS: action_play_card(game_state)
+MBS -> MBS: _get_valid_cards(game_state)
+MBS -> MFG: _select_best_card(game_state, valid_cards)
+
+== MinimaxFullGame Process ==
+
+MFG -> ABP: clear_cache()
+ABP --> MFG: cache cleared
+
+loop for each valid card
+    MFG -> MFG: _create_simulation(state, card)
+    MFG -> TM: simulate_move(state, card, simulate_func)
+    TM --> MFG: sim_state
+    
+    MFG -> MFG: _minimax_with_pruning(sim_state, depth-1, alpha, beta, False)
+    
+    == Recursive Minimax with Pruning ==
+    
+    MFG -> GSE: create_state_key(state)
+    GSE --> MFG: state_key
+    
+    MFG -> ABP: get_cached_score(state_key)
+    ABP --> MFG: cached_score (or None)
+    
+    alt if not cached
+        alt if depth == 0 or game_over
+            MFG -> GSE: evaluate_position(state)
+            GSE -> GSE: _is_game_over(state)
+            GSE -> GSE: _evaluate_final_position(state) or heuristic
+            GSE --> MFG: evaluation_score
+            MFG -> ABP: cache_score(state_key, score)
+        else if trick_complete
+            MFG -> TM: is_trick_complete(state)
+            TM --> MFG: true
+            MFG -> TM: finalize_trick(state)
+            TM --> MFG: next_state
+            MFG -> MFG: _minimax_with_pruning(next_state, depth, alpha, beta, is_max)
+        else
+            MFG -> MBS: _get_valid_cards_for_player(state, player)
+            MBS --> MFG: valid_cards
+            
+            alt if is_max
+                MFG -> ABP: maximize_with_pruning(state, valid_cards, depth, alpha, beta, minimax_func, simulate_func)
+                loop for each card
+                    ABP -> MFG: _create_simulation_for_player(state, card)
+                    ABP -> MFG: _minimax_with_pruning(sim_state, depth-1, alpha, beta, False)
+                    ABP -> ABP: update alpha, check pruning
+                    alt if should_prune
+                        ABP -> ABP: break
+                    end
+                end
+                ABP --> MFG: max_score
+            else
+                MFG -> ABP: minimize_with_pruning(state, valid_cards, depth, alpha, beta, minimax_func, simulate_func)
+                ABP --> MFG: min_score
+            end
+        end
+        MFG -> ABP: cache_score(state_key, score)
+    end
+end
+
+MFG --> SS: best_card
+
+== Alternative: MinimaxOneTrick Process ==
+
+note over MOT: Parallel process for One Trick Strategy
+
+SS -> MOT: action_play_card(game_state)
+MOT -> MBS: action_play_card(game_state)
+MBS -> MOT: _select_best_card(game_state, valid_cards)
+
+loop for each valid card
+    MOT -> GS: copy.deepcopy(game_state)
+    GS --> MOT: sim_state
+    MOT -> MBS: _simulate_card_play(sim_state, card, player)
+    
+    MOT -> MOT: _minimax(sim_state, 3, is_maximizing=False)
+    
+    == Recursive One-Trick Minimax ==
+    
+    alt if depth == 0 or trick_complete
+        MOT -> MOT: _evaluate_state(game_state)
+        alt if trick complete
+            MOT -> MOT: _evaluate_trick(game_state)
+        else
+            MOT -> MOT: _evaluate_partial_trick(game_state)
+            MOT -> MOT: _evaluate_current_winner(game_state, trick_value)
+        end
+        MOT --> MOT: evaluation_score
+    else
+        MOT -> MBS: _get_valid_cards_for_player(game_state, player)
+        MBS --> MOT: valid_cards
+        
+        alt if is_maximizing
+            MOT -> MOT: _maximize_score(game_state, valid_cards, depth)
+            loop for each card
+                MOT -> GS: copy.deepcopy(game_state)
+                MOT -> MBS: _simulate_card_play(sim_state, card, player)
+                MOT -> MOT: _minimax(sim_state, depth-1, False)
+            end
+            MOT --> MOT: max_score
+        else
+            MOT -> MOT: _minimize_score(game_state, valid_cards, depth)
+            MOT --> MOT: min_score
+        end
+    end
+end
+
+MOT --> SS: best_card
+
+SS --> A: best_card
+A --> U: selected_card
+
+== Key Differences ==
+
+note over MFG: Full Game Features:\n- Alpha-Beta Pruning\n- Transposition Table Caching\n- Multi-trick evaluation\n- Helper class delegation\n- Variable depth search
+
+note over MOT: One Trick Features:\n- Simple minimax (no pruning)\n- Single trick evaluation\n- Fixed depth (3 cards)\n- Direct state copying\n- Heuristic evaluation
+
+@enduml
