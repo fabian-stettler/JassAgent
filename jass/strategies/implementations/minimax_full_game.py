@@ -1,7 +1,7 @@
 from jass.strategies.implementations.minimax_base_strategy import MinimaxBaseStrategy
-from jass.strategies.implementations.game_state_evaluator import GameStateEvaluator
-from jass.strategies.implementations.trick_manager import TrickManager
-from jass.strategies.implementations.alpha_beta_pruner import AlphaBetaPruner
+from jass.strategies.minimax_helper.game_state_evaluator import GameStateEvaluator
+from jass.strategies.minimax_helper.trick_manager import TrickManager
+from jass.strategies.minimax_helper.alpha_beta_pruner import AlphaBetaPruner
 from jass.game.game_state import GameState
 import numpy as np
 import copy
@@ -55,7 +55,7 @@ class MinimaxFullGame(MinimaxBaseStrategy):
             return score
             
         if self.trick_manager.is_trick_complete(state):
-            next_state = self.trick_manager.complete_trick(state)
+            next_state = self.trick_manager.finalize_trick(state)
             score = self._minimax_with_pruning(next_state, depth, alpha, beta, is_max)
             self.pruner.cache_score(state_key, score)
             return score
@@ -86,7 +86,7 @@ class MinimaxFullGame(MinimaxBaseStrategy):
             return self.evaluator.evaluate_position(state)
             
         if self.trick_manager.is_trick_complete(state):
-            next_state = self.trick_manager.complete_trick(state)
+            next_state = self.trick_manager.finalize_trick(state)
             return self._minimax_basic(next_state, depth, is_max)
         
         valid_cards = self._get_valid_cards_for_player(state, state.player)
