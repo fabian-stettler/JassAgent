@@ -1,4 +1,8 @@
 # Unfair tournament with proper cheating agents
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import logging
 import numpy as np
 from jass.arena.arena import Arena

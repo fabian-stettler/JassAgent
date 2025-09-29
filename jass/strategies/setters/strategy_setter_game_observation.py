@@ -1,4 +1,4 @@
-from playing_strategy_game_observation import PlayingStrategyGameObservation
+from jass.strategies.interfaces.playing_strategy_game_observation import PlayingStrategyGameObservation
 from jass.game.game_observation import GameObservation
 
 class StrategySetterGameObservation:
