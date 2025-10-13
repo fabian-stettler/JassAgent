@@ -6,4 +6,4 @@ class StrategySetterGameObservation:
         self.strategy = strategy
 
     def play_card(self, obs: GameObservation):
-        self.strategy.action_play_card(obs)
+        return self.strategy.action_play_card(obs)
