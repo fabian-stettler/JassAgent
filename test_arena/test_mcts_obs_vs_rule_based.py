@@ -17,13 +17,18 @@ from jass.agents.rule_based_agent import RuleBasedAgent
 def main():
     logging.basicConfig(level=logging.INFO, format='%(levelname)s:%(name)s:%(message)s')
 
-    nr_games = 10
+    # Allow quick overrides via environment for smoke tests
+    nr_games = int(os.getenv("NR_GAMES", "10"))
+    mcts_samples = int(os.getenv("MCTS_SAMPLES", "20"))
+    mcts_sims = int(os.getenv("MCTS_SIMS", "500"))
+
     arena = Arena(nr_games_to_play=nr_games, print_every_x_games=1, cheating_mode=False)
 
     # Team 0 (North/South): MCTS with imperfect information (observation only)
     # Team 1 (East/West): Rule-based (observation only)
     # good results for MCTS at atleast 400 simulations and 16 samples
-    mcts_obs_agent = AgentByMCTSObservation(samples=20, simulations_per_sample=500, time_limit_sec=None)
+    # can be overridden by env vars for quicker runs
+    mcts_obs_agent = AgentByMCTSObservation(samples=mcts_samples, simulations_per_sample=mcts_sims, time_limit_sec=None)
     rule_based_agent = RuleBasedAgent()
     randomAgent = AgentRandomSchieber()
 

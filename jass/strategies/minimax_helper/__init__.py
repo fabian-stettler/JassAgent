@@ -1,14 +1,24 @@
-"""
-Minimax Helper Classes
+"""Deprecated shim for minimax_helper (moved under implementations).
 
-This module contains helper classes for minimax algorithm implementations:
-- TrickManager: Handles trick completion and game state transitions
-- GameStateEvaluator: Provides game position evaluation and heuristics
-- AlphaBetaPruner: Implements alpha-beta pruning optimization
+Imports have moved to jass.strategies.implementations.minimax_helper.
+This package remains only as a compatibility layer and may be removed.
 """
 
-from .trick_manager import TrickManager
-from .game_state_evaluator import GameStateEvaluator
-from .alpha_beta_pruner import AlphaBetaPruner
+import warnings
 
-__all__ = ['TrickManager', 'GameStateEvaluator', 'AlphaBetaPruner']
+warnings.warn(
+	"jass.strategies.minimax_helper is deprecated; "
+	"use jass.strategies.implementations.minimax_helper instead.",
+	DeprecationWarning,
+	stacklevel=2,
+)
+
+from jass.strategies.implementations.minimax_helper.trick_manager import TrickManager
+from jass.strategies.implementations.minimax_helper.game_state_evaluator import GameStateEvaluator
+from jass.strategies.implementations.minimax_helper.alpha_beta_pruner import AlphaBetaPruner
+
+__all__ = [
+	'TrickManager',
+	'GameStateEvaluator',
+	'AlphaBetaPruner',
+]

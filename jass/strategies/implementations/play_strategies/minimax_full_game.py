@@ -1,7 +1,7 @@
 from jass.strategies.implementations.play_strategies.minimax_base_strategy import MinimaxBaseStrategy
-from jass.strategies.minimax_helper.game_state_evaluator import GameStateEvaluator
-from jass.strategies.minimax_helper.trick_manager import TrickManager
-from jass.strategies.minimax_helper.alpha_beta_pruner import AlphaBetaPruner
+from jass.strategies.implementations.minimax_helper.game_state_evaluator import GameStateEvaluator
+from jass.strategies.implementations.minimax_helper.trick_manager import TrickManager
+from jass.strategies.implementations.minimax_helper.alpha_beta_pruner import AlphaBetaPruner
 from jass.game.game_state import GameState
 import numpy as np
 import copy
