@@ -10,8 +10,8 @@ if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
 from jass.arena.arena import Arena
-from jass.agents.agent_by_minimax_full_game import AgentByMinimaxFullGame
-from jass.agents.agent_by_mcts_observation_from_state import AgentByMCTSObservationFromState
+from jass.agents.agent_minimax_full_game import AgentByMinimaxFullGame
+from jass.agents.agent_mcts_observation_from_state import AgentByMCTSObservationFromState
 
 
 def main():

@@ -10,7 +10,7 @@ if ROOT_DIR not in sys.path:
 
 from jass.agents.agent_random_schieber import AgentRandomSchieber
 from jass.arena.arena import Arena
-from jass.agents.agent_by_mcts_observation import AgentByMCTSObservation
+from jass.agents.agent_mcts_observation import AgentByMCTSObservation
 from jass.agents.rule_based_agent import RuleBasedAgent
 
 

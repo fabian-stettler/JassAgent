@@ -7,8 +7,8 @@ import logging
 import time
 import numpy as np
 from jass.arena.arena import Arena
-from jass.agents.agent_by_minimax import AgentByMinimax
-from jass.agents.agent_by_minimax_full_game import AgentByMinimaxFullGame
+from jass.agents.agent_minimax import AgentByMinimax
+from jass.agents.agent_minimax_full_game import AgentByMinimaxFullGame
 from jass.agents.agent_cheating_random_schieber import AgentCheatingRandomSchieber
 
 def test_strategy_performance():

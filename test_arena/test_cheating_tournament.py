@@ -6,7 +6,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import logging
 import numpy as np
 from jass.arena.arena import Arena
-from jass.agents.agent_by_minimax import AgentByMinimax
+from jass.agents.agent_minimax import AgentByMinimax
 from jass.agents.agent_cheating_random_schieber import AgentCheatingRandomSchieber
 
 def main():

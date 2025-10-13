@@ -6,8 +6,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import logging
 import time
 from jass.arena.arena import Arena
-from jass.agents.agent_by_mcts_cheating import AgentByMCTSCheating
-from jass.agents.agent_by_minimax_full_game import AgentByMinimaxFullGame
+from jass.agents.agent_mcts_cheating import AgentByMCTSCheating
+from jass.agents.agent_minimax_full_game import AgentByMinimaxFullGame
 
 
 def test_mcts_vs_minimax_depth6():
