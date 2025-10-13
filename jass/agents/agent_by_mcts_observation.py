@@ -2,8 +2,12 @@ from jass.agents.agent import Agent
 from jass.game.game_observation import GameObservation
 from jass.game.rule_schieber import RuleSchieber
 from jass.strategies.setters.strategy_setter_game_observation import StrategySetterGameObservation
-from jass.strategies.implementations.monte_carlo_tree_search_imperfect_information import (
+from jass.strategies.implementations.play_strategies.monte_carlo_tree_search_imperfect_information import (
     MonteCarloTreeSearchImperfectInformation,
+)
+from jass.strategies.setters.trump_strategy_setter_observation import TrumpStrategySetterObservation
+from jass.strategies.implementations.trump_strategy.sixty_eight_points_or_schiebe_observation import (
+    SixtyEightPointsOrSchiebeObservation,
 )
 
 
@@ -24,11 +28,10 @@ class AgentByMCTSObservation(Agent):
         self._strategy = StrategySetterGameObservation(strategy)
 
     def action_trump(self, obs: GameObservation) -> int:
-        # Keep trump simple for now: push to keep focus on play strategy
-        from jass.game.const import PUSH
-
-        # It's safe to pick PUSH if forehand, or do nothing otherwise.
-        return PUSH
+        # Use observation-based strategy for trump decision
+        trump_strategy = TrumpStrategySetterObservation(SixtyEightPointsOrSchiebeObservation())
+        return trump_strategy.action_trump(obs)
+        
 
     def action_play_card(self, obs: GameObservation) -> int:
         return self._strategy.play_card(obs)

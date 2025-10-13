@@ -1,4 +1,4 @@
-from jass.strategies.implementations.minimax_base_strategy import MinimaxBaseStrategy
+from jass.strategies.implementations.play_strategies.minimax_base_strategy import MinimaxBaseStrategy
 from jass.game.game_state import GameState
 from jass.utils.rule_based_agent_util import calculate_score_of_card
 import numpy as np

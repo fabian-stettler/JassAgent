@@ -1,10 +1,14 @@
 from jass.strategies.interfaces.playing_strategy_game_observation import PlayingStrategyGameObservation
 from jass.game.game_observation import GameObservation
-from rule_based_agent_util import calculate_score_of_card
+from jass.game.rule_schieber import RuleSchieber
+from jass.utils.rule_based_agent_util import calculate_score_of_card
 
 
 class HighestCardFirst(PlayingStrategyGameObservation):
-    def action_play_card(self,obs: GameObservation):
+    def __init__(self) -> None:
+        self._rule = RuleSchieber()
+
+    def action_play_card(self, obs: GameObservation):
         '''returns index of the card position in the one hot encoded array which has the highest value'''
         valid_cards = self._rule.get_valid_cards_from_obs(obs)
         

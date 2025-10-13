@@ -7,10 +7,10 @@ from jass.agents.agent_cheating import AgentCheating
 from jass.utils.rule_based_agent_util import *
 from jass.game.game_util import *
 from jass.game.game_state import GameState
-from jass.strategies.implementations.minimax_one_trick import MinimaxOneTrick
+from jass.strategies.implementations.play_strategies.minimax_one_trick import MinimaxOneTrick
 from jass.strategies.setters.strategy_setter_game_state import StrategySetter as StrategySetterGameState
 from jass.strategies.setters.trump_strategy_setter import TrumpStrategySetter
-from jass.strategies.implementations.sixty_eight_points_or_schiebe import SixtyEightPointsOrSchiebe
+from jass.strategies.implementations.trump_strategy.sixty_eight_points_or_schiebe import SixtyEightPointsOrSchiebe
 
 
 class AgentByMinimax(AgentCheating):

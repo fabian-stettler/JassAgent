@@ -4,12 +4,12 @@ from jass.game.const import *
 from jass.game.rule_schieber import RuleSchieber
 from jass.agents.agent import Agent
 from jass.agents.agent_random_schieber import AgentRandomSchieber
-from utils.rule_based_agent_util import *
-from game.game_util import *
-from strategies.implementations.highest_card_first import HighestCardFirst
+from jass.utils.rule_based_agent_util import *
+from jass.game.game_util import *
+from jass.strategies.implementations.play_strategies.highest_card_first import HighestCardFirst
 from jass.strategies.setters.strategy_setter_game_observation import StrategySetterGameObservation
 from jass.strategies.setters.trump_strategy_setter_observation import TrumpStrategySetterObservation
-from jass.strategies.implementations.sixty_eight_points_or_schiebe_observation import SixtyEightPointsOrSchiebeObservation
+from jass.strategies.implementations.trump_strategy.sixty_eight_points_or_schiebe_observation import SixtyEightPointsOrSchiebeObservation
 
 class RuleBasedAgent(Agent):
     def __init__(self):

@@ -3,7 +3,7 @@ from jass.game.game_state import GameState
 from jass.game.game_state_util import observation_from_state
 from jass.game.rule_schieber import RuleSchieber
 from jass.strategies.setters.strategy_setter_game_observation import StrategySetterGameObservation
-from jass.strategies.implementations.monte_carlo_tree_search_imperfect_information import (
+from jass.strategies.implementations.play_strategies.monte_carlo_tree_search_imperfect_information import (
     MonteCarloTreeSearchImperfectInformation,
 )
 

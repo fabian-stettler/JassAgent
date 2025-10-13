@@ -2,7 +2,7 @@ from jass.game.game_state import GameState
 from jass.game.rule_schieber import RuleSchieber
 from jass.agents.agent_cheating import AgentCheating
 from jass.strategies.setters.strategy_setter_game_state import StrategySetter
-from jass.strategies.implementations.monte_carlo_tree_search_perfect_information import MonteCarloTreeSearchPerfectInformation
+from jass.strategies.implementations.play_strategies.monte_carlo_tree_search_perfect_information import MonteCarloTreeSearchPerfectInformation
 
 
 class AgentByMCTSCheating(AgentCheating):
