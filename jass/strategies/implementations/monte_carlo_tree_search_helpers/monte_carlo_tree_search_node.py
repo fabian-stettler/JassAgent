@@ -69,7 +69,7 @@ class MCTSNode:
         # Draw case: no winner update
     
     def get_win_rate(self, player: int) -> float:
-        """Get win rate for specified player"""
+        """Get win rate for specified player (team 0 or 1)"""
         if self.visit_count == 0:
             return 0.0
         return self.win_counts[player] / self.visit_count

@@ -87,4 +87,5 @@ class MonteCarloSimulationControl:
                 best_action = action
 
         self._logger.info(f"MCTS done: iters={i}, elapsed={time.time()-start:.2f}s, best_action={best_action}, best_visits={best_visits}")
+        self._logger.info(f"Best action: {best_action} with {best_visits} visits")
         return best_action
