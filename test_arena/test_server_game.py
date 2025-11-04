@@ -17,8 +17,8 @@ def main():
     
     # Create network agents that connect to your running server
     # Your server has 'random' and 'random2' (MyAgent) players
-    myagent_network_agent1 = AgentByNetwork('http://127.0.0.1:5000/MyAgent1')
-    myagent_network_agent2 = AgentByNetwork('http://127.0.0.1:5000/MyAgent2')
+    myagent_network_agent1 = AgentByNetwork('https://unbewildered-nedra-pantomimically.ngrok-free.dev/MCTSObservationAgent')
+    myagent_network_agent2 = AgentByNetwork('https://unbewildered-nedra-pantomimically.ngrok-free.dev/MCTSObservationAgent2')
     
     # Local random agent for comparison
     local_random = AgentRandomSchieber()
