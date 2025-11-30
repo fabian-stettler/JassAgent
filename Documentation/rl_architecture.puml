@@ -1,0 +1,64 @@
+@startuml RLArchitecture
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "Examples" {
+  class TrainSelfPlay {
+    +main()
+    +parse_args()
+  }
+}
+
+interface Agent
+class RLAgent
+class TrajectoryBuffer
+class ActorCriticPolicy
+class SelfPlayTrainer
+class Arena
+class AgentByMCTSObservation
+class RuleBasedAgent
+class GameObservation
+class RuleSchieber
+
+TrainSelfPlay --> SelfPlayTrainer : builds & runs
+TrainSelfPlay --> RLAgent : instantiates
+
+SelfPlayTrainer *-- "2" RLAgent : rl_seats
+SelfPlayTrainer --> Arena : build_default_arena()
+SelfPlayTrainer ..> AgentByMCTSObservation : default opponents
+
+Arena o-- Agent : players[4]
+Arena --> GameObservation : produces during play
+
+RLAgent ..|> Agent
+RLAgent *-- TrajectoryBuffer
+RLAgent *-- ActorCriticPolicy
+RLAgent --> RuleSchieber : uses for valid cards
+RLAgent ..> GameObservation : encode_observation()
+ActorCriticPolicy --> TrajectoryBuffer : update(trajectories)
+
+AgentByMCTSObservation ..|> Agent
+RuleBasedAgent ..|> Agent
+
+note right of RLAgent
+ - Uses encode_observation(obs)
+ - Stores transitions in TrajectoryBuffer
+ - Calls policy.act() for card selection
+ - finalize_trick / finalize_episode add rewards
+end note
+
+note bottom of SelfPlayTrainer
+ run_batch():
+ 1. create Arena with RL + opponent agents
+ 2. play batch_size games
+ 3. compute team reward and call
+    RLAgent.finalize_episode()
+end note
+
+note right of Arena
+ - Delegates turns to Agent implementations
+ - Maintains GameState/GameObservation
+ - Reports points to trainer
+end note
+
+@enduml

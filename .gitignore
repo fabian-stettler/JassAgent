@@ -130,3 +130,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+#everything inside checkpoints which are saved weights during a training run
+checkpoints/jass_rl_agent_epoch_*.pt
+checkpoints/schieber_rl_epoch_*.pt

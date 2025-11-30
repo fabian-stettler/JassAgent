@@ -4,7 +4,7 @@ Base components to program agents for the game of jass (https://en.wikipedia.org
 
 
 # start locally deployed flask Server
-cd /home/fabian/Documents/InformatikVault/Semester5/RL4GAMES/AgentCode/jass-kit-py && python examples/service/player_service.py 
+(base) fabian@fabian-Yoga-7-16IAP7:~/Documents/InformatikVault/Semester5/DL4G/AgentCode/jass-kit-py$ PYTHONPATH=. python -m examples.service.player_service
 
 
 # start a test game with two local random players and two players from the flask server

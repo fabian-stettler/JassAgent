@@ -60,8 +60,8 @@ def create_app():
     app.add_player('AgentRandomSchieber2', AgentRandomSchieber())
     app.add_player('RuleBasedAgent', RuleBasedAgent())
     app.add_player('RuleBasedAgent2', RuleBasedAgent())
-    app.add_player('MCTSObservationAgent', AgentByMCTSObservation(samples=10, simulations_per_sample=300, time_limit_sec=5))
-    app.add_player('MCTSObservationAgent2', AgentByMCTSObservation(samples=10, simulations_per_sample=300, time_limit_sec=5))  
+    app.add_player('MCTSObservationAgent', AgentByMCTSObservation(samples=10, simulations_per_sample=300, time_limit_sec=7))
+    app.add_player('MCTSObservationAgent2', AgentByMCTSObservation(samples=10, simulations_per_sample=300, time_limit_sec=7))  
 
     # Request / response logging for debugging third-party integrations (captures headers and body)
     @app.before_request

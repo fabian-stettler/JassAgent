@@ -37,6 +37,7 @@ class Arena:
                  print_every_x_games: int = 5,
                  check_move_validity=True,
                  save_filename=None,
+                 training_arena: bool = False,
                  cheating_mode=False):
         """
 
@@ -47,8 +48,10 @@ class Arena:
             check_move_validity: True if moves from the agents should be checked for validity
             save_filename: True if results should be save
             cheating_mode: True if agents will receive the full game state
+            training_arena: True if this arena is used for training (enables per-trick reward hooks)
         """
         self._cheating_mode = cheating_mode
+        self._training_arena = training_arena
         self._logger = logging.getLogger(__name__)
 
         self._nr_games_played = 0
@@ -61,10 +64,10 @@ class Arena:
             self._dealing_card_strategy = dealing_card_strategy
 
         # the players
-        self._players: List[Agent or AgentCheating or None] = [None, None, None, None]
+        self._players = [None, None, None, None]
 
         # player ids to use in saved games (if written)
-        self._player_ids: List[int] = [0, 0, 0, 0]
+        self._player_ids = [0, 0, 0, 0]
 
         # the current game that is being played
         self._game = GameSim(rule=RuleSchieber())  # schieber rule is default
@@ -218,6 +221,9 @@ class Arena:
                     if self._cheating_mode else \
                     card_action in np.flatnonzero(self._game.rule.get_valid_cards_from_obs(obs)), 'Invalid card played!'
             self._game.action_play_card(card_action)
+            # If this arena is used for training, dispatch per-trick rewards when a trick finishes
+            if self._training_arena and self._game.state.nr_cards_in_trick == 0 and self._game.state.nr_tricks > 0:
+                self._dispatch_trick_rewards()
 
         # update results
         self._points_team_0[self._nr_games_played] = self._game.state.points[0]
@@ -256,3 +262,25 @@ class Arena:
         if self._save_games:
             self._file_generator.__exit__(None, None, None)
         sys.stdout.write('\n')
+
+    def _dispatch_trick_rewards(self):
+        """Call finalize_trick on agents that expose the hook with signed rewards per team."""
+        trick_index = self._game.state.nr_tricks - 1
+        if trick_index < 0:
+            return
+        points = float(self._game.state.trick_points[trick_index])
+        winner = int(self._game.state.trick_winner[trick_index])
+        winning_team = 0 if winner in (NORTH, SOUTH) else 1
+        team_rewards = [0.0, 0.0]
+        team_rewards[winning_team] = points
+        team_rewards[1 - winning_team] = -points
+
+        for seat, agent in enumerate(self._players):
+            if agent is None or not hasattr(agent, 'finalize_trick'):
+                continue
+            team = 0 if seat in (NORTH, SOUTH) else 1
+            try:
+                agent.finalize_trick(team_rewards[team])
+            except Exception:
+                # keep arena robust to agent errors during training hook
+                self._logger.exception('Error while calling finalize_trick on agent %s', seat)

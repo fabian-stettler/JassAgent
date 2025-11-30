@@ -20,6 +20,7 @@ MarkupSafe @ file:///croot/markupsafe_1738584038848/work
 matplotlib-inline @ file:///home/conda/feedstock_root/build_artifacts/matplotlib-inline_1733416936468/work
 nest_asyncio @ file:///home/conda/feedstock_root/build_artifacts/nest-asyncio_1733325553580/work
 numpy==2.3.3
+torch==2.9.1
 packaging @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_packaging_1745345660/work
 parso @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_parso_1755974222/work
 pexpect @ file:///home/conda/feedstock_root/build_artifacts/pexpect_1733301927746/work
