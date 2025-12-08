@@ -14,7 +14,7 @@ from typing import List, Tuple
 
 import numpy as np
 
-from jass.agents.agent_mcts_observation import AgentByMCTSObservation
+from jass.agents.agent_mcts_observation_gpu import AgentByMCTSObservationGPU
 from jass.arena.arena import Arena
 from jass.game.const import NORTH, SOUTH, EAST, WEST
 from jass.agents.rule_based_agent import RuleBasedAgent  # baseline opponent
@@ -50,7 +50,7 @@ class SelfPlayTrainer:
                       print_every_x_games=nr_games + 1,
                       training_arena=True)
         arena.set_players(north=rl_agent,
-                          east=AgentByMCTSObservation(),
+                          east=(),
                           south=rl_agent,
-                          west=AgentByMCTSObservation())
+                          west=AgentByMCTSObservationGPU(samples=2, simulations_per_sample=20, time_limit_sec=None, device='cpu', noise_std=0.0))
         return arena
