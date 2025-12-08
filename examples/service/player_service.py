@@ -17,6 +17,7 @@ from jass.service.player_service_app import PlayerServiceApp
 from jass.agents.agent_random_schieber import AgentRandomSchieber
 from jass.agents.rule_based_agent import RuleBasedAgent
 from jass.agents.agent_mcts_observation import AgentByMCTSObservation
+from jass.agents.agent_mcts_observation_gpu import AgentByMCTSObservationGPU
 
 
 def create_app():
@@ -62,6 +63,8 @@ def create_app():
     app.add_player('RuleBasedAgent2', RuleBasedAgent())
     app.add_player('MCTSObservationAgent', AgentByMCTSObservation(samples=10, simulations_per_sample=300, time_limit_sec=7))
     app.add_player('MCTSObservationAgent2', AgentByMCTSObservation(samples=10, simulations_per_sample=300, time_limit_sec=7))  
+    app.add_player('MCTSObservationAgentGPU', AgentByMCTSObservationGPU(samples=8, simulations_per_sample=200, time_limit_sec=7))
+    app.add_player('MCTSObservationAgentGPU2', AgentByMCTSObservationGPU(samples=8, simulations_per_sample=200, time_limit_sec=7))  
 
     # Request / response logging for debugging third-party integrations (captures headers and body)
     @app.before_request
