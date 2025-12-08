@@ -10,7 +10,7 @@ This trainer focuses on episodic (game-level) rewards: team point differential.
 """
 from __future__ import annotations
 
-from typing import List, Tuple
+from typing import List
 
 import numpy as np
 
@@ -21,10 +21,26 @@ from jass.agents.rule_based_agent import RuleBasedAgent  # baseline opponent
 from jass.rl.rl_agent import RLAgent
 
 
+def _auto_select_device(preferred: str = 'cuda') -> str:
+    """Return the preferred device if available, otherwise fall back to CPU."""
+    if preferred not in ('cuda', 'cpu'):
+        return preferred
+    if preferred == 'cuda':
+        try:
+            import torch  # type: ignore
+
+            if torch.cuda.is_available():
+                return 'cuda'
+        except Exception:
+            pass
+    return 'cpu'
+
+
 class SelfPlayTrainer:
-    def __init__(self, rl_seats: List[int], batch_size: int = 10):
+    def __init__(self, rl_seats: List[int], batch_size: int = 10, mcts_device: str | None = None):
         self.rl_seats = rl_seats
         self.batch_size = batch_size
+        self.mcts_device = mcts_device or _auto_select_device()
 
     def run_batch(self, arena: Arena) -> dict:
         # Play batch_size games, accumulate returns for RL seats
@@ -43,14 +59,17 @@ class SelfPlayTrainer:
             'games': self.batch_size
         }
 
-    @staticmethod
-    def build_default_arena(nr_games: int, rl_agent: RLAgent) -> Arena:
+    def build_default_arena(self, nr_games: int, rl_agent: RLAgent) -> Arena:
         arena = Arena(nr_games_to_play=nr_games,
                       cheating_mode=False,
                       print_every_x_games=nr_games + 1,
                       training_arena=True)
         arena.set_players(north=rl_agent,
-                          east=(),
+                          east=RuleBasedAgent(),
                           south=rl_agent,
-                          west=AgentByMCTSObservationGPU(samples=2, simulations_per_sample=20, time_limit_sec=None, device='cpu', noise_std=0.0))
+                          west=AgentByMCTSObservationGPU(samples=2,
+                                                          simulations_per_sample=20,
+                                                          time_limit_sec=None,
+                                                          device=self.mcts_device,
+                                                          noise_std=0.0))
         return arena
