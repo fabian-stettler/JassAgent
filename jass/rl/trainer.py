@@ -65,11 +65,10 @@ class SelfPlayTrainer:
                       print_every_x_games=nr_games + 1,
                       training_arena=True)
         arena.set_players(north=rl_agent,
-                          east=RuleBasedAgent(),
+                          east=AgentByMCTSObservationGPU(samples=8, simulations_per_sample=150, time_limit_sec=None, device='gpu', noise_std=0.0),
                           south=rl_agent,
-                          west=AgentByMCTSObservationGPU(samples=2,
-                                                          simulations_per_sample=20,
-                                                          time_limit_sec=None,
-                                                          device=self.mcts_device,
-                                                          noise_std=0.0))
+                          west=AgentByMCTSObservationGPU(samples=8, simulations_per_sample=150, time_limit_sec=None, device='gpu', noise_std=0.0))
+        
+        #log the MCTS Agent with the amount of samples and simulations per sample that got used
+        print(f"Built arena with MCTS GPU Agent using {arena.players[EAST].samples} samples and {arena.players[EAST]._strategy._simulations_per_sample} simulations per sample on device {arena.players[EAST]._strategy.device}")
         return arena

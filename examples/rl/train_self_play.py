@@ -59,6 +59,9 @@ def main():
     ckpt_dir = Path(args.checkpoint_dir)
     ckpt_dir.mkdir(parents=True, exist_ok=True)
 
+    #log batch size, device usage, etc.
+    print(f"Starting training for {args.epochs} epochs, batch size {cfg['batch_size']}, MCTS device {trainer.mcts_device}")
+
     for epoch in range(args.epochs):
         arena = trainer.build_default_arena(nr_games=cfg['batch_size'], rl_agent=agent)
         stats = trainer.run_batch(arena)
