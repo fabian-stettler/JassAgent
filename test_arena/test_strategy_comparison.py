@@ -12,6 +12,7 @@ REPO_ROOT = os.path.dirname(PROJECT_ROOT)
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
+from jass.agents.agent_cnn import CNN_Agent
 from jass.arena.arena import Arena
 from jass.agents.agent_random_schieber import AgentRandomSchieber
 from jass.agents.agent_mcts_observation import AgentByMCTSObservation
@@ -21,6 +22,12 @@ DEFAULT_MODEL_PATH = os.path.join(
     REPO_ROOT,
     'weights_rl_agent',
     'jass_rl_agent_final_v1.pth'
+)
+
+DEFAULT_MODEL_PATH_CNN = os.path.join(
+    REPO_ROOT,
+    'weights_cnn',
+    'cnn_policy.pt'
 )
 
 LOGGER = logging.getLogger(__name__)
@@ -99,8 +106,7 @@ def main():
     rl_agent = load_rl_agent()
 
     matchups = [
-        #("RL vs Random", AgentRandomSchieber),
-        ("RL vs MCTS Observation", AgentByMCTSObservation)
+        ("Convolutional Agent vs RL Agent", lambda: CNN_Agent(model_path=DEFAULT_MODEL_PATH_CNN)),
     ]
 
     summary = {}

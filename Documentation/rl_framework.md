@@ -9,7 +9,7 @@ This document explains the RL scaffolding added to the project and how to extend
 | `jass/rl/env.py` | Observation encoder + optional single-player env wrapper. |
 | `jass/rl/policy_network.py` | Minimal numpy MLP policy (masked softmax over 36 cards). |
 | `jass/rl/replay_buffer.py` | On-policy trajectory storage for episodic updates. |
-| `jass/rl/rl_agent.py` | `RLAgent` implementing the existing `Agent` interface. |
+| `jass/agents/rl_agent.py` | `RLAgent` implementing the existing `Agent` interface. |
 | `jass/rl/trainer.py` | Self-play batch runner using existing `Arena`. Episodic (game) rewards. |
 | `jass/rl/config.py` | Default hyperparameters. |
 | `examples/rl/train_self_play.py` | Simple training loop demonstration. |
