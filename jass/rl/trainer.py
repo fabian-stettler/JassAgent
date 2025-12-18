@@ -18,7 +18,7 @@ from jass.agents.agent_mcts_observation_gpu import AgentByMCTSObservationGPU
 from jass.arena.arena import Arena
 from jass.game.const import NORTH, SOUTH, EAST, WEST
 from jass.agents.rule_based_agent import RuleBasedAgent  # baseline opponent
-from jass.rl.rl_agent import RLAgent
+from jass.agents.rl_agent import RLAgent
 
 
 def _auto_select_device(preferred: str = 'cuda') -> str:
@@ -65,10 +65,13 @@ class SelfPlayTrainer:
                       print_every_x_games=nr_games + 1,
                       training_arena=True)
         arena.set_players(north=rl_agent,
-                          east=AgentByMCTSObservationGPU(samples=8, simulations_per_sample=150, time_limit_sec=None, device='gpu', noise_std=0.0),
+                          east=AgentByMCTSObservationGPU(samples=8, simulations_per_sample=150, time_limit_sec=None, device='cuda', noise_std=0.0),
                           south=rl_agent,
-                          west=AgentByMCTSObservationGPU(samples=8, simulations_per_sample=150, time_limit_sec=None, device='gpu', noise_std=0.0))
+                          west=AgentByMCTSObservationGPU(samples=8, simulations_per_sample=150, time_limit_sec=None, device='cuda', noise_std=0.0))
         
         #log the MCTS Agent with the amount of samples and simulations per sample that got used
-        print(f"Built arena with MCTS GPU Agent using {arena.players[EAST].samples} samples and {arena.players[EAST]._strategy._simulations_per_sample} simulations per sample on device {arena.players[EAST]._strategy.device}")
+        east_agent = arena.players[EAST]
+        print(
+            f"Built arena with MCTS GPU Agent using {east_agent.samples} samples and {east_agent.simulations_per_sample} simulations per sample on device {east_agent.device}"
+        )
         return arena

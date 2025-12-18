@@ -1,110 +1,123 @@
-# Strategy comparison test for minimax agents
-import sys
+"""Compare a trained RL agent against random and MCTS-based opponents."""
+from __future__ import annotations
+
 import os
+import sys
+import time
+import logging
+from typing import Callable, Dict, Any
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(PROJECT_ROOT)
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
-from jass.agents.agent_mcts_observation import AgentByMCTSObservation
-from jass.rl.rl_agent import RLAgent
-
-import logging
-import time
-import numpy as np
 from jass.arena.arena import Arena
-from jass.agents.agent_minimax import AgentByMinimax
-from jass.agents.agent_minimax_full_game import AgentByMinimaxFullGame
 from jass.agents.agent_random_schieber import AgentRandomSchieber
+from jass.agents.agent_mcts_observation import AgentByMCTSObservation
+from jass.agents.rl_agent import RLAgent
 
-def test_strategy_performance(adversaryAgent1=AgentRandomSchieber, adversaryAgent2=AgentRandomSchieber):
-    """
-    Test different minimax strategies against each other and random agents
-    """
-    logging.basicConfig(level=logging.WARNING)
-    
-    # Test configurations
-    rl_agent = RLAgent()
-    rl_agent.set_training(False)
-    strategies_to_test = [
-        ("RL-Agent_v1", rl_agent),  # Example RL-based agent
+DEFAULT_MODEL_PATH = os.path.join(
+    REPO_ROOT,
+    'weights_rl_agent',
+    'jass_rl_agent_final_v1.pth'
+)
+
+LOGGER = logging.getLogger(__name__)
+
+
+def load_rl_agent(model_path: str = DEFAULT_MODEL_PATH) -> RLAgent:
+    """Load a trained RL agent checkpoint for evaluation."""
+    agent = RLAgent()
+    LOGGER.info("Attempting to load RL agent weights from %s", model_path)
+    if os.path.isfile(model_path):
+        agent.load(model_path)
+        LOGGER.info("Loaded RL agent weights from %s", model_path)
+    else:
+        LOGGER.warning("No model found at %s; using randomly initialized weights.", model_path)
+    print(f"Using RL agent weights from: {model_path}")
+    agent.set_training(False)
+    return agent
+
+
+def run_matchup(label: str,
+                opponent_factory: Callable[[], Any],
+                rl_agent: RLAgent,
+                nr_games: int = 20) -> Dict[str, float]:
+    """Run RL agent (north/south) against two identical opponents."""
+    arena = Arena(
+        nr_games_to_play=nr_games,
+        cheating_mode=False,
+        print_every_x_games=nr_games + 1
+    )
+    opponent_east = opponent_factory()
+    opponent_west = opponent_factory()
+    arena.set_players(rl_agent, opponent_east, rl_agent, opponent_west)
+
+    start = time.time()
+    arena.play_all_games()
+    duration = time.time() - start
+
+    avg_points_rl = float(arena.points_team_0.mean())
+    avg_points_opp = float(arena.points_team_1.mean())
+    wins = sum(1 for p0, p1 in zip(arena.points_team_0, arena.points_team_1) if p0 > p1)
+    win_rate = wins / nr_games
+
+    stats = {
+        'avg_points_rl': avg_points_rl,
+        'avg_points_opp': avg_points_opp,
+        'advantage': avg_points_rl - avg_points_opp,
+        'win_rate': win_rate,
+        'total_time': duration,
+        'time_per_game': duration / nr_games
+    }
+
+    print(f"\n🔍 Matchup: {label}")
+    print("-" * 50)
+    print(f"Average Points (RL vs Opp): {avg_points_rl:.1f} vs {avg_points_opp:.1f}")
+    print(f"Advantage: {stats['advantage']:.1f} points")
+    print(f"Win Rate: {win_rate:.1%}")
+    print(f"Time per game: {stats['time_per_game']:.2f}s")
+
+    return stats
+
+
+def main():
+    logging.basicConfig(
+        level=logging.INFO,
+        stream=sys.stdout,
+        format='%(asctime)s %(levelname)s %(message)s',
+        force=True
+    )
+    for noisy_logger in (
+        'jass.agents.agent_mcts_observation',
+        'jass.strategies.implementations',
+        'jass.agents.rl'
+    ):
+        logging.getLogger(noisy_logger).setLevel(logging.WARNING)
+
+    rl_agent = load_rl_agent()
+
+    matchups = [
+        #("RL vs Random", AgentRandomSchieber),
+        ("RL vs MCTS Observation", AgentByMCTSObservation)
     ]
-    
-    results = {}
-    
-    for strategy_name, agent in strategies_to_test:
-        print(f"\n🔍 Testing: {strategy_name}")
-        print("-" * 40)
-        
-        # Create arena
-        arena = Arena(
-            nr_games_to_play=10,  # Reduced for faster testing
-            cheating_mode=False,
-            print_every_x_games=5
-        )
-        
-        # Test against random agents
-        random1 = adversaryAgent1()
-        random3 = adversaryAgent2()
-        
-        # Set players: Strategy vs 3 Random
-        arena.set_players(agent, random1, agent, random3)
-        
-        # Measure performance
-        start_time = time.time()
-        arena.play_all_games()
-        end_time = time.time()
-        
-        # Calculate results
-        avg_points_strategy = arena.points_team_0.mean()
-        avg_points_random = arena.points_team_1.mean()
-        win_rate = sum(1 for t0, t1 in zip(arena.points_team_0, arena.points_team_1) if t0 > t1) / len(arena.points_team_0)
-        execution_time = end_time - start_time
-        
-        results[strategy_name] = {
-            'avg_points': avg_points_strategy,
-            'opponent_points': avg_points_random,
-            'advantage': avg_points_strategy - avg_points_random,
-            'win_rate': win_rate,
-            'time': execution_time,
-            'time_per_game': execution_time / 10
-        }
-        
-        print(f"Average Points: {avg_points_strategy:.1f} vs {avg_points_random:.1f}")
-        print(f"Advantage: {avg_points_strategy - avg_points_random:.1f} points")
-        print(f"Win Rate: {win_rate:.1%}")
-        print(f"Execution Time: {execution_time:.2f}s ({execution_time/10:.2f}s per game)")
-    
-    # Summary comparison
+
+    summary = {}
+    for label, opponent in matchups:
+        summary[label] = run_matchup(label, opponent, rl_agent)
+
     print("\n" + "=" * 60)
-    print("📊 STRATEGY COMPARISON SUMMARY")
+    print("📊 SUMMARY")
     print("=" * 60)
-    print(f"{'Strategy':<25} {'Advantage':<10} {'Win Rate':<10} {'Time/Game':<12}")
+    print(f"{'Matchup':<25} {'Advantage':>10} {'Win Rate':>12} {'Time/Game':>12}")
     print("-" * 60)
-    
-    for strategy_name, result in results.items():
-        print(f"{strategy_name:<25} {result['advantage']:>7.1f}   {result['win_rate']:>7.1%}   {result['time_per_game']:>8.2f}s")
-    
-    # Find best performer
-    best_strategy = max(results.items(), key=lambda x: x[1]['advantage'])
-    fastest_strategy = min(results.items(), key=lambda x: x[1]['time_per_game'])
-    
-    print(f"\n🏆 Best Performance: {best_strategy[0]} (+{best_strategy[1]['advantage']:.1f} points)")
-    print(f"⚡ Fastest Strategy: {fastest_strategy[0]} ({fastest_strategy[1]['time_per_game']:.2f}s per game)")
-    
-    # Efficiency rating (advantage per second)
-    print(f"\n💡 Efficiency Ratings (Advantage/Time):")
-    efficiency_ratings = [(name, result['advantage'] / result['time_per_game']) 
-                         for name, result in results.items()]
-    efficiency_ratings.sort(key=lambda x: x[1], reverse=True)
-    
-    for name, efficiency in efficiency_ratings:
-        print(f"   {name}: {efficiency:.2f} points/second")
+    for label, stats in summary.items():
+        print(f"{label:<25} {stats['advantage']:>10.1f} {stats['win_rate']:>11.1%} {stats['time_per_game']:>11.2f}s")
+
+    best = max(summary.items(), key=lambda item: item[1]['advantage'])
+    print(f"\n🏆 Highest Advantage: {best[0]} (+{best[1]['advantage']:.1f} points)")
 
 
 if __name__ == '__main__':
-    print("Starting comprehensive minimax strategy analysis...")
-    test_strategy_performance(AgentByMCTSObservation, AgentByMCTSObservation)
-
-    print(f"\n✅ Analysis complete!")
+    main()

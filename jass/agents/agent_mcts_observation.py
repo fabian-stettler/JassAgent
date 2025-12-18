@@ -2,7 +2,6 @@ from jass.agents.agent import Agent
 from jass.game.game_observation import GameObservation
 from jass.game.rule_schieber import RuleSchieber
 from jass.strategies.implementations.play_strategies.highest_card_first import HighestCardFirst
-from jass.strategies.implementations.trump_strategy.neuronal_net import NeuronalNet
 from jass.strategies.setters.strategy_setter_game_observation import StrategySetterGameObservation
 from jass.strategies.implementations.play_strategies.monte_carlo_tree_search_imperfect_information import (
     MonteCarloTreeSearchImperfectInformation,

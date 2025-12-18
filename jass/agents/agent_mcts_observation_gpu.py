@@ -13,6 +13,17 @@ from jass.strategies.implementations.trump_strategy.sixty_eight_points_or_schieb
 )
 
 
+def _normalize_device(device: str | None) -> str | None:
+    if device is None:
+        return device
+    normalized = device.lower()
+    if normalized in ('gpu', 'cuda'):
+        return 'cuda'
+    if normalized in ('cpu', 'cpu:0'):
+        return 'cpu'
+    return device
+
+
 class AgentByMCTSObservationGPU(Agent):
     """Agent variant that evaluates the MCTS rollout value function on a GPU when available."""
 
@@ -26,6 +37,11 @@ class AgentByMCTSObservationGPU(Agent):
     ) -> None:
         super().__init__()
         self._rule = RuleSchieber()
+        device = _normalize_device(device)
+        print(f"MCTS_Observation_GPU uses {device} as device")
+        self.samples = samples
+        self.simulations_per_sample = simulations_per_sample
+        self.device = device
         strategy = MonteCarloTreeSearchImperfectInformationGPU(
             simulations_per_sample=simulations_per_sample,
             samples=samples,

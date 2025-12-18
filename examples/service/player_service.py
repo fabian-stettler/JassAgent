@@ -17,7 +17,7 @@ from jass.service.player_service_app import PlayerServiceApp
 from jass.agents.agent_random_schieber import AgentRandomSchieber
 from jass.agents.rule_based_agent import RuleBasedAgent
 from jass.agents.agent_mcts_observation import AgentByMCTSObservation
-from jass.agents.agent_mcts_observation_gpu import AgentByMCTSObservationGPU
+from jass.agents.rl_agent import RLAgent
 
 
 def create_app():
@@ -63,8 +63,16 @@ def create_app():
     app.add_player('RuleBasedAgent2', RuleBasedAgent())
     app.add_player('MCTSObservationAgent', AgentByMCTSObservation(samples=10, simulations_per_sample=300, time_limit_sec=7))
     app.add_player('MCTSObservationAgent2', AgentByMCTSObservation(samples=10, simulations_per_sample=300, time_limit_sec=7))  
-    app.add_player('MCTSObservationAgentGPU', AgentByMCTSObservationGPU(samples=8, simulations_per_sample=200, time_limit_sec=7))
-    app.add_player('MCTSObservationAgentGPU2', AgentByMCTSObservationGPU(samples=8, simulations_per_sample=200, time_limit_sec=7))  
+    rl_agent = RLAgent()
+    rl_agent.load('/home/fabian/Documents/InformatikVault/Semester5/DL4G/AgentCode/jass-kit-py/weights_rl_agent/jass_rl_agent_final_v1.pth')
+    rl_agent.set_training(False)
+
+    rl_agent2 = RLAgent()
+    rl_agent2.load('/home/fabian/Documents/InformatikVault/Semester5/DL4G/AgentCode/jass-kit-py/weights_rl_agent/jass_rl_agent_final_v1.pth')
+    rl_agent2.set_training(False)
+    
+    app.add_player('RLAgent1', rl_agent)
+    app.add_player('RLAgent2', rl_agent2)  # assuming RLAgent is defined elsewhere
 
     # Request / response logging for debugging third-party integrations (captures headers and body)
     @app.before_request
