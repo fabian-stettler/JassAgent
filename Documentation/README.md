@@ -15,3 +15,9 @@ cd /home/fabian/Documents/InformatikVault/Semester5/RL4GAMES/AgentCode/jass-kit-
 - precondition: ngrok is set up and running // --> https://dashboard.ngrok.com/get-started/setup/linux
 - ngrok http <exposed_port>  //e.g. 5000
 - players should now be accessible through endpoints 
+
+
+### Für MEP
+1. Factsheet 1-2 Seiten mit Agent bzw. Wahl von Trumpf bzw. Karte
+2. Video (Powerpoint mit denselben Informationen die dann durchgegangen wird) gesprochen von mir
+3. MEP am 26.01

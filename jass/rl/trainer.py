@@ -43,23 +43,39 @@ class SelfPlayTrainer:
         self.mcts_device = mcts_device or _auto_select_device()
 
     def run_batch(self, arena: Arena) -> dict:
-        # Play batch_size games, accumulate returns for RL seats
+        '''Play batch_size amount of games, accumulate returns for RL seats'''
         team_rewards = []
+        wins = 0
+        draws = 0
+        losses = 0
         for i in range(self.batch_size):
             dealer = NORTH if i % 4 == 0 else [NORTH, EAST, SOUTH, WEST][i % 4]
             arena.play_game(dealer=dealer)
             # Compute reward: team0 points - team1 points
             r = arena.points_team_0[arena.nr_games_played - 1] - arena.points_team_1[arena.nr_games_played - 1]
             team_rewards.append(r)
+            if r > 0:
+                wins += 1
+            elif r < 0:
+                losses += 1
+            else:
+                draws += 1
             for seat, agent in enumerate(arena.players):
                 if seat in self.rl_seats and hasattr(agent, 'finalize_episode'):
                     agent.finalize_episode(terminal_reward=float(r))
+        total_games = self.batch_size
+        win_rate = wins / total_games if total_games else 0.0
         return {
             'mean_reward': float(np.mean(team_rewards)),
-            'games': self.batch_size
+            'win_rate': float(win_rate),
+            'RL_wins': wins,
+            'RL_draws': draws,
+            'RL_losses': losses,
+            'games': total_games
         }
 
     def build_default_arena(self, nr_games: int, rl_agent: RLAgent) -> Arena:
+        '''Default Arena with RL Agent and MCTS opponents on GPU'''
         arena = Arena(nr_games_to_play=nr_games,
                       cheating_mode=False,
                       print_every_x_games=nr_games + 1,

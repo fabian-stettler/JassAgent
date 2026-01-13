@@ -21,7 +21,7 @@ from jass.agents.rl_agent import RLAgent
 DEFAULT_MODEL_PATH = os.path.join(
     REPO_ROOT,
     'weights_rl_agent',
-    'jass_rl_agent_final_v1.pth'
+    'jass_rl_agent_final_v2.pth'
 )
 
 DEFAULT_MODEL_PATH_CNN = os.path.join(
@@ -50,7 +50,7 @@ def load_rl_agent(model_path: str = DEFAULT_MODEL_PATH) -> RLAgent:
 def run_matchup(label: str,
                 opponent_factory: Callable[[], Any],
                 rl_agent: RLAgent,
-                nr_games: int = 20) -> Dict[str, float]:
+                nr_games: int = 100) -> Dict[str, float]:
     """Run RL agent (north/south) against two identical opponents."""
     arena = Arena(
         nr_games_to_play=nr_games,
@@ -62,9 +62,10 @@ def run_matchup(label: str,
     arena.set_players(rl_agent, opponent_east, rl_agent, opponent_west)
 
     start = time.time()
+    print(f"\nStarting matchup: {label} ({nr_games} games)")
     arena.play_all_games()
     duration = time.time() - start
-
+    print(f"Completed {nr_games} games in {duration:.2f}s")
     avg_points_rl = float(arena.points_team_0.mean())
     avg_points_opp = float(arena.points_team_1.mean())
     wins = sum(1 for p0, p1 in zip(arena.points_team_0, arena.points_team_1) if p0 > p1)
@@ -106,7 +107,9 @@ def main():
     rl_agent = load_rl_agent()
 
     matchups = [
-        ("Convolutional Agent vs RL Agent", lambda: CNN_Agent(model_path=DEFAULT_MODEL_PATH_CNN)),
+        #("Convolutional Agent vs RL Agent", lambda: CNN_Agent(model_path=DEFAULT_MODEL_PATH_CNN)),
+        #("random_schieber vs RL Agent", lambda: AgentRandomSchieber()),
+        ("MCTS Observation vs RL Agent", lambda: AgentByMCTSObservation(samples=8, simulations_per_sample=150, time_limit_sec=5.0)),
     ]
 
     summary = {}

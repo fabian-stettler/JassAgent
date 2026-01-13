@@ -34,6 +34,12 @@ class RLAgent(Agent):
         seed: int = 42,
         entropy_coef: float = 1e-3,
         buffer_capacity: int = 1024,
+        # reward shaping config
+        normalize_rewards: bool = False,
+        trick_reward_weight: float = 0.0,
+        terminal_reward_weight: float = 1.0,
+        trick_points_max: float = 60.0,
+        game_points_max: float = 157.0,
     ):
         self.rule = rule or RuleSchieber()
         self.gamma = gamma
@@ -55,6 +61,12 @@ class RLAgent(Agent):
         self._episode_transition_count = 0
         self._trump_strategy = RLAgentTrumpStrategy()
         self._play_strategy = RLPolicyPlayStrategy(owner=self)
+        # reward shaping settings
+        self._normalize_rewards = normalize_rewards
+        self._trick_reward_weight = trick_reward_weight
+        self._terminal_reward_weight = terminal_reward_weight
+        self._trick_points_max = float(trick_points_max) if trick_points_max and trick_points_max > 0 else 27.0
+        self._game_points_max = float(game_points_max) if game_points_max and game_points_max > 0 else 157.0
 
     # --- trump selection ---
     def action_trump(self, obs: GameObservation) -> int:
@@ -65,16 +77,33 @@ class RLAgent(Agent):
         return self._play_strategy.action_play_card(obs)
 
     def finalize_trick(self, trick_reward: float):
-        """Add trick reward to the latest stored transition."""
+        """Add trick reward to the latest stored transition.
+
+        Applies optional normalization to [0,1] (symmetric mapping of [-max,+max] → [0,1])
+        and multiplies by configured trick reward weight.
+        """
         if self.training_mode and len(self.buffer) > 0:
-            self.buffer._storage[-1]["reward"] += trick_reward
+            r = float(trick_reward)
+            if self._normalize_rewards:
+                # map [-max, +max] to [0, 1]
+                r = max(0.0, min(1.0, (r / self._trick_points_max + 1.0) * 0.5))
+            r *= self._trick_reward_weight
+            self.buffer._storage[-1]["reward"] += r
 
     def finalize_episode(self, terminal_reward: float | None = None):
-        """Distribute terminal reward and trigger policy updates when due."""
+        """Distribute terminal reward and trigger policy updates when due.
+
+        Applies optional normalization to [0,1] (symmetric mapping of [-max,+max] → [0,1])
+        and multiplies by configured terminal reward weight.
+        """
         if terminal_reward is not None and self.training_mode and len(self.buffer) > 0:
             start_idx = max(len(self.buffer._storage) - self._episode_transition_count, 0)
+            r = float(terminal_reward)
+            if self._normalize_rewards:
+                r = max(0.0, min(1.0, (r / self._game_points_max + 1.0) * 0.5))
+            r *= self._terminal_reward_weight
             for entry in self.buffer._storage[start_idx:]:
-                entry["reward"] += terminal_reward
+                entry["reward"] += r
         if not self.training_mode:
             self.buffer.clear()
             self._episode_transition_count = 0
